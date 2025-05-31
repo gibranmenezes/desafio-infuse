@@ -8,26 +8,19 @@
 		<version>3.5.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+
+
+
 	<groupId>io.gmenezes</groupId>
 	<artifactId>infuse-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>infuse-api</name>
 	<description>Api Infuse</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+
 	<properties>
 		<java.version>21</java.version>
+
+		<springdoc.version>2.5.0</springdoc.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -66,6 +59,11 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
