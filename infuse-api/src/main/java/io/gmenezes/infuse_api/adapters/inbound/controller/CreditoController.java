@@ -1,5 +1,6 @@
 package io.gmenezes.infuse_api.adapters.inbound.controller;
 
+import io.gmenezes.infuse_api.adapters.dtos.AppResponse;
 import io.gmenezes.infuse_api.application.services.CreditoUseCasesImpl;
 import io.gmenezes.infuse_api.domain.credito.dtos.CreditoResponse;
 import jakarta.validation.constraints.NotBlank;
@@ -17,15 +18,21 @@ public class CreditoController {
 
     private final CreditoUseCasesImpl useCases;
 
-
     @GetMapping("/{numeroNfse}")
-    public ResponseEntity<List<CreditoResponse>> buscarPorNfse(@NotBlank @PathVariable String numeroNfse) {
+    public ResponseEntity<AppResponse<List<CreditoResponse>>> buscarPorNfse(@NotBlank @PathVariable String numeroNfse) {
         List<CreditoResponse> creditos = useCases.getCreditosByNfse(numeroNfse);
 
-        if (creditos.isEmpty()) return ResponseEntity.noContent().build();
+        if (creditos.isEmpty()) {
+            return AppResponse.<List<CreditoResponse>>noContent("Nenhum crédito encontrado").toResponseEntity();
+        }
 
-        return ResponseEntity.ok(creditos);
+        return AppResponse.ok("Créditos encontrados", creditos).toResponseEntity();
     }
 
+    @GetMapping("/numero/{numeroCredito}")
+    public ResponseEntity<AppResponse<CreditoResponse>> buscarPorNumeroCredito(@PathVariable String numeroCredito) {
+        CreditoResponse credito = useCases.getCreditoByNumero(numeroCredito);
+        return AppResponse.ok("Crédito encontrado", credito).toResponseEntity();
+    }
 
 }
