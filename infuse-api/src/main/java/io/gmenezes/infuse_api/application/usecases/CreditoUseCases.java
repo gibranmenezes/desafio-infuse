@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface CreditoUseCases {
 
     List<CreditoResponse> getCreditosByNfse(String numeroNfse);
-    Optional<CreditoResponse> getCreditoByNumero(String numeroCredito);
+    CreditoResponse getCreditoByNumero(String numeroCredito);
 }

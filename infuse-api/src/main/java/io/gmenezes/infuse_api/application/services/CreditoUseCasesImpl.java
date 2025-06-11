@@ -10,8 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.ObjectNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -29,7 +30,11 @@ public class CreditoUseCasesImpl implements CreditoUseCases {
     }
 
     @Override
-    public Optional<CreditoResponse> getCreditoByNumero(String numeroCredito) {
-        return Optional.empty();
+    public CreditoResponse getCreditoByNumero(String numeroCredito) {
+        return creditoRepository.findByNumeroCredito(numeroCredito)
+                .map(CreditoMapper::fromCreditoToResponse)
+                .orElseThrow(() -> new ObjectNotFoundException("Crédito não encontrado para o numero: " + numeroCredito, Credito.class));
     }
+
+
 }
