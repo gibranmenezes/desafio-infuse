@@ -5,7 +5,6 @@ import io.gmenezes.infuse_api.domain.credito.Credito;
 import io.gmenezes.infuse_api.domain.credito.dtos.CreditoResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 @Mapper
 public interface CreditoMapper {
