@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.gmenezes.infuse_api.domain.credito.dtos.CreditoResponse;
 import io.gmenezes.infuse_api.util.CreditoMapper;
+import org.hibernate.ObjectNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -43,6 +44,34 @@ public class CreditoUseCasesImplTest {
         assertNotNull(result);
         assertEquals(creditoList.getFirst().getNumeroCredito(), result.getFirst().numeroCredito());
 
+    }
+
+    @Test
+    void getCreditoByNumero_deve_retonar_credito() {
+        String numeroCredito = "123456";
+        Credito credito = getCreditoList().getFirst();
+        CreditoResponse response = getResponseList().getFirst();
+
+        when(repository.findByNumeroCredito(numeroCredito)).thenReturn(credito);
+        when(mapper.fromCreditoToResponse(credito)).thenReturn(response);
+
+        CreditoResponse result = service.getCreditoByNumero(numeroCredito);
+
+        assertNotNull(result);
+        assertEquals(credito.getNumeroCredito(), result.numeroCredito());
+    }
+
+
+    @Test
+    void getCreditoByNumero_deve_lancar_ObjectNotFoundException_quando_nao_encontrar_credito() {
+        String numeroCredito = "9999";
+        when(repository.findByNumeroCredito(numeroCredito)).thenReturn(null);
+
+        assertThrows(
+                ObjectNotFoundException.class,
+                () -> service.getCreditoByNumero(numeroCredito),
+                "Crédito não encontrado para o numero: " + numeroCredito
+        );
     }
 
     private List<Credito> getCreditoList() {
