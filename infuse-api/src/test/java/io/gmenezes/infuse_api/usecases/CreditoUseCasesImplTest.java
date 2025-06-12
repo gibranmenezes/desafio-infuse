@@ -3,6 +3,10 @@ package io.gmenezes.infuse_api.usecases;
 import io.gmenezes.infuse_api.application.services.CreditoUseCasesImpl;
 import io.gmenezes.infuse_api.domain.credito.Credito;
 import io.gmenezes.infuse_api.domain.credito.CreditoRepository;
+import static org.junit.jupiter.api.Assertions.*;
+
+import io.gmenezes.infuse_api.domain.credito.dtos.CreditoResponse;
+import io.gmenezes.infuse_api.util.CreditoMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,17 +17,31 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 public class CreditoUseCasesImplTest {
 
     @Mock
     private CreditoRepository repository;
 
+    @Mock
+    private CreditoMapper mapper;
+
     @InjectMocks
     private CreditoUseCasesImpl service;
 
     @Test
     void getCreditosByNfse_deve_retornar_lista_de_creditos(){
+        var creditoList = getCreditoList();
+        when(repository.findAllByNfse("7891011")).thenReturn(creditoList);
+        when(mapper.fromCreditoToResponse(creditoList.getFirst())).thenReturn(getResponseList().getFirst());
+
+        var result = service.getCreditosByNfse("7891011");
+
+        assertNotNull(result);
+        assertEquals(creditoList.getFirst().getNumeroCredito(), result.getFirst().numeroCredito());
 
     }
 
@@ -33,6 +51,19 @@ public class CreditoUseCasesImplTest {
                         "7891011",
                         LocalDate.of(2024, 2,25),
                         BigDecimal.valueOf(1500.75),  "ISSQN", true,
+                        BigDecimal.valueOf(5.0),
+                        BigDecimal.valueOf(30000.00),
+                        BigDecimal.valueOf(5000.00),
+                        BigDecimal.valueOf(25000.00)
+                ));
+    }
+
+    private List<CreditoResponse> getResponseList() {
+        return List.of(
+                new CreditoResponse("123456",
+                        "7891011",
+                        "2024-02-25",
+                        BigDecimal.valueOf(1500.75),  "ISSQN", "Sim",
                         BigDecimal.valueOf(5.0),
                         BigDecimal.valueOf(30000.00),
                         BigDecimal.valueOf(5000.00),
