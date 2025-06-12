@@ -24,8 +24,7 @@ public class CreditoUserRespositoryImpl implements CreditoRepository {
     }
 
     @Override
-    public Credito findByNumeroCredito(String numeroCredito) {
-        var credito = creditoRepository.findByNumeroCredito(numeroCredito);
-        return creditoMapper.fromJpaEntityToCredito(credito);
+    public Optional<Credito> findByNumeroCredito(String numeroCredito) {
+        return Optional.empty();
     }
 }
