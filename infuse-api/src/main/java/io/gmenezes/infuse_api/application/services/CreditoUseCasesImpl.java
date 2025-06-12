@@ -32,10 +32,11 @@ public class CreditoUseCasesImpl implements CreditoUseCases {
 
     @Override
     public CreditoResponse getCreditoByNumero(String numeroCredito) {
-        return creditoRepository.findByNumeroCredito(numeroCredito)
-                .map(creditoMapper::fromCreditoToResponse)
-                .orElseThrow(() -> new ObjectNotFoundException("Crédito não encontrado para o numero: " + numeroCredito, Credito.class));
+        Credito credito = creditoRepository.findByNumeroCredito(numeroCredito);
+        if (credito == null) {
+            throw new ObjectNotFoundException("Crédito não encontrado para o numero: " + numeroCredito, Credito.class);
+        }
+        return creditoMapper.fromCreditoToResponse(credito);
     }
-
 
 }
