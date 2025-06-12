@@ -13,4 +13,6 @@ public interface JpaCreditoRepository extends JpaRepository<JpaCreditoEntity, Lo
             WHERE c.numeroNfse = :numeroNfse
             """)
     List<JpaCreditoEntity> findAllByNfse(String numeroNfse);
+
+    JpaCreditoEntity findByNumeroCredito(String numeroCredito);
 }
