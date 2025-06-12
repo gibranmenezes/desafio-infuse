@@ -6,5 +6,5 @@ import java.util.Optional;
 public interface CreditoRepository {
 
     List<Credito> findAllByNfse(String numeroNfse);
-    Optional<Credito> findByNumeroCredito(String numeroCredito);
+    Credito findByNumeroCredito(String numeroCredito);
 }

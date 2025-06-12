@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -24,7 +23,8 @@ public class CreditoUserRespositoryImpl implements CreditoRepository {
     }
 
     @Override
-    public Optional<Credito> findByNumeroCredito(String numeroCredito) {
-        return Optional.empty();
+    public Credito findByNumeroCredito(String numeroCredito) {
+        var credito = creditoRepository.findByNumeroCredito(numeroCredito);
+        return creditoMapper.fromJpaEntityToCredito(credito);
     }
 }
