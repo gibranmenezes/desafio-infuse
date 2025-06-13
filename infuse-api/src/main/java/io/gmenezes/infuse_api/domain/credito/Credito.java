@@ -2,6 +2,7 @@ package io.gmenezes.infuse_api.domain.credito;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 
 
 public class Credito {
@@ -110,5 +111,17 @@ public class Credito {
 
     public void setBaseCalculo(BigDecimal baseCalculo) {
         this.baseCalculo = baseCalculo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Credito credito = (Credito) o;
+        return simplesNacional == credito.simplesNacional && Objects.equals(id, credito.id) && Objects.equals(numeroCredito, credito.numeroCredito) && Objects.equals(numeroNfse, credito.numeroNfse) && Objects.equals(dataConstituicao, credito.dataConstituicao) && Objects.equals(valorIssqn, credito.valorIssqn) && Objects.equals(tipoCredito, credito.tipoCredito) && Objects.equals(aliquota, credito.aliquota) && Objects.equals(valorFaturado, credito.valorFaturado) && Objects.equals(valorDeducao, credito.valorDeducao) && Objects.equals(baseCalculo, credito.baseCalculo);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, numeroCredito, numeroNfse, dataConstituicao, valorIssqn, tipoCredito, simplesNacional, aliquota, valorFaturado, valorDeducao, baseCalculo);
     }
 }
