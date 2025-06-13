@@ -1,18 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
-import { MatTableModule } from '@angular/material/table';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDividerModule } from '@angular/material/divider';
-import { CreditoService } from '../../services/credito.service';
+import { MaterialModule } from '../../shared/material.module';
+import { Subject, takeUntil } from 'rxjs';
+import { ConsultaHandlerService } from '../../services/consulta-handler.service';
 import { Credito } from '../../models/credito.model';
 
 @Component({
@@ -22,25 +14,16 @@ import { Credito } from '../../models/credito.model';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSelectModule,
-    MatTableModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule,
-    MatDividerModule
+    MaterialModule
   ],
   templateUrl: './consulta-credito.component.html',
   styleUrls: ['./consulta-credito.component.scss']
 })
-export class ConsultaCreditoComponent {
+export class ConsultaCreditoComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
-  private creditoService = inject(CreditoService);
+  private consultaHandler = inject(ConsultaHandlerService);
+  private destroy$ = new Subject<void>();
   
   consultaForm = this.fb.group({
     tipoConsulta: ['nfse', Validators.required],
@@ -60,10 +43,17 @@ export class ConsultaCreditoComponent {
   
   tipoResultadoExibido: 'nfse' | 'credito' | null = null;
 
-  constructor() {
-    this.consultaForm.get('tipoConsulta')?.valueChanges.subscribe(() => {
-      this.consultaForm.get('numeroConsulta')?.setValue('');
-    });
+  ngOnInit(): void {
+    this.consultaForm.get('tipoConsulta')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.consultaForm.get('numeroConsulta')?.setValue('');
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get tipoConsulta() {
@@ -76,92 +66,72 @@ export class ConsultaCreditoComponent {
 
   consultar() {
     if (this.consultaForm.invalid) {
-      this.snackBar.open('Por favor, preencha o campo corretamente', 'Fechar', {
-        duration: 3000
-      });
+      this.consultaHandler.mostrarMensagem('Por favor, preencha o campo corretamente');
       return;
     }
 
     const numeroConsulta = this.consultaForm.get('numeroConsulta')?.value ?? '';
+    this.resetarEstado();
     this.loading = true;
+    this.tipoResultadoExibido = this.tipoConsulta as 'nfse' | 'credito';
+
+    if (this.tipoConsulta === 'nfse') {
+      this.executarConsultaPorNfse(numeroConsulta);
+    } else {
+      this.executarConsultaPorNumeroCredito(numeroConsulta);
+    }
+  }
+
+  resetarEstado(): void {
     this.credito = null;
     this.creditos = [];
     this.creditoSelecionadoId = null;
     this.creditoDetalhe = null;
-    this.tipoResultadoExibido = this.tipoConsulta as 'nfse' | 'credito';
-
-    if (this.tipoConsulta === 'nfse') {
-      this.consultarPorNfse(numeroConsulta);
-    } else {
-      this.consultarPorNumeroCredito(numeroConsulta);
-    }
   }
 
-  consultarPorNfse(numeroNfse: string) {
-    this.creditoService.getCreditosByNfse(numeroNfse).subscribe({
-      next: (response) => {
-        this.loading = false;
-        
-        if (!response) {
-          this.creditos = [];
-          this.snackBar.open('Nenhum dado recebido do servidor', 'Fechar', {
-            duration: 3000
-          });
-          return;
+  executarConsultaPorNfse(numeroNfse: string): void {
+    this.consultaHandler.consultarPorNfse(numeroNfse)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
+          const resultado = this.consultaHandler.processarResposta(
+            response, 
+            'Nenhum crédito encontrado'
+          );
+          if (resultado) {
+            this.creditos = resultado;
+          }
+        },
+        error: (error) => {
+          this.loading = false;
+          this.consultaHandler.tratarErro(error, 'Erro ao consultar créditos');
         }
-        
-        if (response.status === 204 || !response.content || response.content.length === 0) {
-          this.creditos = [];
-          this.snackBar.open('Nenhum crédito encontrado', 'Fechar', {
-            duration: 3000
-          });
-        } else {
-          this.creditos = response.content || [];
-        }
-      },
-      error: (error) => {
-        this.loading = false;
-        this.snackBar.open('Erro ao consultar créditos', 'Fechar', {
-          duration: 3000
-        });
-        console.error('Erro ao consultar créditos:', error);
-      }
-    });
+      });
   }
 
-  consultarPorNumeroCredito(numeroCredito: string) {
-    this.creditoService.getCreditoByNumero(numeroCredito).subscribe({
-      next: (response) => {
-        this.loading = false;
-        
-        if (!response) {
-          this.credito = null;
-          this.snackBar.open('Nenhum dado recebido do servidor', 'Fechar', {
-            duration: 3000
-          });
-          return;
+  executarConsultaPorNumeroCredito(numeroCredito: string): void {
+    this.consultaHandler.consultarPorNumeroCredito(numeroCredito)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
+          const resultado = this.consultaHandler.processarResposta(
+            response, 
+            'Crédito não encontrado'
+          );
+          if (resultado) {
+            this.credito = resultado;
+          }
+        },
+        error: (error) => {
+          this.loading = false;
+          this.consultaHandler.tratarErro(error, 'Erro ao consultar crédito');
         }
-        
-        if (response.status === 204 || !response.content) {
-          this.credito = null;
-          this.snackBar.open('Crédito não encontrado', 'Fechar', {
-            duration: 3000
-          });
-        } else {
-          this.credito = response.content;
-        }
-      },
-      error: (error) => {
-        this.loading = false;
-        this.snackBar.open('Erro ao consultar crédito', 'Fechar', {
-          duration: 3000
-        });
-        console.error('Erro ao consultar crédito:', error);
-      }
-    });
+      });
   }
 
-  verDetalhes(numeroCredito: string) {
+  verDetalhes(numeroCredito: string): void {
     if (this.creditoSelecionadoId === numeroCredito) {
       this.creditoSelecionadoId = null;
       this.creditoDetalhe = null;
@@ -171,28 +141,25 @@ export class ConsultaCreditoComponent {
     this.creditoSelecionadoId = numeroCredito;
     this.loadingDetalhe = true;
     
-    this.creditoService.getCreditoByNumero(numeroCredito).subscribe({
-      next: (response) => {
-        this.loadingDetalhe = false;
-        
-        if (!response || response.status === 204 || !response.content) {
-          this.creditoDetalhe = null;
-          this.snackBar.open('Não foi possível carregar os detalhes do crédito', 'Fechar', {
-            duration: 3000
-          });
-        } else {
-          this.creditoDetalhe = response.content;
+    this.consultaHandler.consultarPorNumeroCredito(numeroCredito)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.loadingDetalhe = false;
+          const resultado = this.consultaHandler.processarResposta(
+            response, 
+            'Não foi possível carregar os detalhes do crédito'
+          );
+          if (resultado) {
+            this.creditoDetalhe = resultado;
+          }
+        },
+        error: (error) => {
+          this.loadingDetalhe = false;
+          this.creditoSelecionadoId = null;
+          this.consultaHandler.tratarErro(error, 'Erro ao carregar os detalhes do crédito');
         }
-      },
-      error: (error) => {
-        this.loadingDetalhe = false;
-        this.creditoSelecionadoId = null;
-        this.snackBar.open('Erro ao carregar os detalhes do crédito', 'Fechar', {
-          duration: 3000
-        });
-        console.error('Erro ao carregar detalhes do crédito:', error);
-      }
-    });
+      });
   }
 
   isCreditoSelecionado(numeroCredito: string): boolean {
