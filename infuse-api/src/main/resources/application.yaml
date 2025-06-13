@@ -2,6 +2,8 @@ spring:
   application:
     name: infuse-api
 
+
+
   datasource:
     url: jdbc:postgresql://localhost:5432/infuse_db
     username: postgres
@@ -14,3 +16,7 @@ spring:
           lob:
             non_contextual_creation: true
     show-sql: true
+
+server:
+  servlet:
+    context-path: /infuse-api
