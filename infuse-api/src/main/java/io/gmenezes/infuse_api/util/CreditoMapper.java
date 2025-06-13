@@ -1,34 +1,28 @@
 package io.gmenezes.infuse_api.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gmenezes.infuse_api.adapters.outbound.entities.JpaCreditoEntity;
 import io.gmenezes.infuse_api.domain.credito.Credito;
 import io.gmenezes.infuse_api.domain.credito.dtos.CreditoResponse;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 
-import java.time.format.DateTimeFormatter;
-
+@Mapper(componentModel = "spring")
 public interface CreditoMapper {
 
 
-    static CreditoResponse fromCreditoToResponse(Credito credito) {
-        return new CreditoResponse(
-                credito.getNumeroCredito(),
-                credito.getNumeroNfse(),
-                credito.getDataConstituicao().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                credito.getValorIssqn(),
-                credito.getTipoCredito(),
-                credito.isSimplesNacional() ? "Sim" : "Não",
-                credito.getAliquota(),
-                credito.getValorFaturado(),
-                credito.getValorDeducao(),
-                credito.getBaseCalculo()
-        );
-    }
+    @Mapping(target = "numeroCredito")
+    @Mapping(target = "numeroNfse")
+    @Mapping(target = "dataConstituicao", dateFormat = "yyyy-MM-dd")
+    @Mapping(target = "valorIssqn")
+    @Mapping(target = "tipoCredito")
+    @Mapping(target = "simplesNacional", expression = "java(credito.isSimplesNacional() ? \"Sim\" : \"Não\")")
+    @Mapping(target = "aliquota")
+    @Mapping(target = "valorFaturado")
+    @Mapping(target = "valorDeducao")
+    @Mapping(target = "baseCalculo")
+    CreditoResponse fromCreditoToResponse(Credito credito);
 
-
-    static Credito fromJpaEntityToCredito(JpaCreditoEntity jpaCreditoEntity) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.convertValue(jpaCreditoEntity, Credito.class);
-    }
+    Credito fromJpaEntityToCredito(JpaCreditoEntity jpaCreditoEntity);
 
 }
