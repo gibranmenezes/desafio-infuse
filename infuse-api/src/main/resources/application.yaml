@@ -17,6 +17,14 @@ spring:
             non_contextual_creation: true
     show-sql: true
 
+  kafka:
+    bootstrap-servers: localhost:9092
+
+app:
+  kafka:
+    topic:
+      consulta-creditos: consulta-creditos
+
 server:
   servlet:
     context-path: /infuse-api
