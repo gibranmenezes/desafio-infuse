@@ -8,6 +8,7 @@ import io.gmenezes.infuse_api.util.CreditoMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.ObjectNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -21,11 +22,14 @@ public class CreditoUseCasesImpl implements CreditoUseCases {
 
     private final CreditoRepository creditoRepository;
 
+    @Autowired
+    private CreditoMapper creditoMapper;
+
     @Override
     public List<CreditoResponse> getCreditosByNfse(String numeroNfse) {
         var creditos = creditoRepository.findAllByNfse(numeroNfse);
         return creditos.stream()
-                .map(CreditoMapper::fromCreditoToResponse)
+                .map(creditoMapper::fromCreditoToResponse)
                 .toList();
     }
 
@@ -35,7 +39,7 @@ public class CreditoUseCasesImpl implements CreditoUseCases {
         if (credito == null) {
             throw new ObjectNotFoundException("Crédito não encontrado para o numero: " + numeroCredito, Credito.class);
         }
-        return CreditoMapper.fromCreditoToResponse(credito);
+        return creditoMapper.fromCreditoToResponse(credito);
     }
 
 }
