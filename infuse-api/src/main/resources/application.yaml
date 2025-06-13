@@ -1,1 +1,16 @@
-spring.application.name=infuse-api
+spring:
+  application:
+    name: infuse-api
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/infuse_db
+    username: postgres
+    password: admin
+
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    show-sql: true
