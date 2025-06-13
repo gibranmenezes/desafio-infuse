@@ -12,10 +12,8 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
       let errorMessage = 'Ocorreu um erro desconhecido';
       
       if (error.error instanceof ErrorEvent) {
-        // Cliente-side error
         errorMessage = `Erro: ${error.error.message}`;
       } else {
-        // Server-side error
         if (error.error && error.error.message) {
           errorMessage = error.error.message;
         } else if (error.status === 0) {
