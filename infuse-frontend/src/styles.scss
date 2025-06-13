@@ -1,4 +1,31 @@
-/* You can add global styles to this file, and also import other style files */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+.error-snackbar {
+  background-color: #f44336;
+  color: white;
+}
+
+@media screen and (max-width: 768px) {
+  .mat-mdc-table {
+    overflow-x: auto;
+    display: block;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+  
+  .mat-mdc-card {
+    padding: 8px;
+  }
+  
+  .mat-mdc-form-field {
+    font-size: 0.9rem;
+  }
+}
