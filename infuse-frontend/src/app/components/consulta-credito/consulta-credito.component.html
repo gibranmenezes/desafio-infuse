@@ -1,0 +1,137 @@
+<div class="container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Consulta de Créditos</mat-card-title>
+    </mat-card-header>
+    <mat-divider></mat-divider>
+    <mat-card-content>
+      <form [formGroup]="consultaForm" (ngSubmit)="consultar()">
+        <div class="label-row">
+          <div class="label-column">Pesquisar por</div>
+          <div class="label-column">{{ labelConsulta }}</div>
+        </div>
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-select formControlName="tipoConsulta">
+              <mat-option value="nfse">
+                <mat-icon class="select-icon">receipt</mat-icon> Número da NFS-e
+              </mat-option>
+              <mat-option value="credito">
+                <mat-icon class="select-icon">credit_card</mat-icon> Número do Crédito
+              </mat-option>
+            </mat-select>
+            <mat-icon matPrefix>search</mat-icon>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="input-field">
+            <input matInput formControlName="numeroConsulta" placeholder="Digite o número">
+            <mat-error *ngIf="consultaForm.get('numeroConsulta')?.hasError('required')">
+              Campo obrigatório
+            </mat-error>
+            <mat-error *ngIf="consultaForm.get('numeroConsulta')?.hasError('minlength')">
+              Digite no mínimo 4 caracteres
+            </mat-error>
+          </mat-form-field>
+          
+          <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+            <mat-icon>search</mat-icon> Consultar
+          </button>
+        </div>
+      </form>
+      
+      <div class="loading-spinner" *ngIf="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+      
+      <div class="resultados" *ngIf="tipoConsulta === 'nfse' && creditos.length > 0">
+        <h3>Créditos Encontrados</h3>
+        <div class="table-container">
+          <table mat-table [dataSource]="creditos" class="mat-elevation-z2 full-width">
+            <ng-container matColumnDef="numeroCredito">
+              <th mat-header-cell *matHeaderCellDef>Número do Crédito</th>
+              <td mat-cell *matCellDef="let credito">{{credito.numeroCredito}}</td>
+            </ng-container>
+            
+            <ng-container matColumnDef="numeroNfse">
+              <th mat-header-cell *matHeaderCellDef>Número da NFS-e</th>
+              <td mat-cell *matCellDef="let credito">{{credito.numeroNfse}}</td>
+            </ng-container>
+            
+            <ng-container matColumnDef="dataConstituicao">
+              <th mat-header-cell *matHeaderCellDef>Data de Constituição</th>
+              <td mat-cell *matCellDef="let credito">{{credito.dataConstituicao}}</td>
+            </ng-container>
+            
+            <ng-container matColumnDef="valorIssqn">
+              <th mat-header-cell *matHeaderCellDef>Valor do ISSQN</th>
+              <td mat-cell *matCellDef="let credito">{{credito.valorIssqn | currency:'BRL'}}</td>
+            </ng-container>
+            
+            <ng-container matColumnDef="tipoCredito">
+              <th mat-header-cell *matHeaderCellDef>Tipo do Crédito</th>
+              <td mat-cell *matCellDef="let credito">{{credito.tipoCredito}}</td>
+            </ng-container>
+            
+            <ng-container matColumnDef="acoes">
+              <th mat-header-cell *matHeaderCellDef>Ações</th>
+              <td mat-cell *matCellDef="let credito">
+                <button mat-icon-button color="primary" (click)="verDetalhes(credito.numeroCredito)" matTooltip="Ver detalhes">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+            
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+      </div>
+      
+      <div class="resultados" *ngIf="tipoConsulta === 'credito' && credito">
+        <h3>Crédito Encontrado</h3>
+        <div class="credito-card">
+          <div class="credito-item">
+            <span class="label">Número do Crédito:</span>
+            <span class="valor">{{credito.numeroCredito}}</span>
+          </div>
+          <div class="credito-item">
+            <span class="label">Número da NFS-e:</span>
+            <span class="valor">{{credito.numeroNfse}}</span>
+          </div>
+          <div class="credito-item">
+            <span class="label">Data de Constituição:</span>
+            <span class="valor">{{credito.dataConstituicao}}</span>
+          </div>
+          <div class="credito-item">
+            <span class="label">Valor do ISSQN:</span>
+            <span class="valor">{{credito.valorIssqn | currency:'BRL'}}</span>
+          </div>
+          <div class="credito-item">
+            <span class="label">Tipo do Crédito:</span>
+            <span class="valor">{{credito.tipoCredito}}</span>
+          </div>
+          <div class="credito-item">
+            <span class="label">Simples Nacional:</span>
+            <span class="valor">{{credito.simplesNacional}}</span>
+          </div>
+          <div class="credito-item">
+            <span class="label">Alíquota:</span>
+            <span class="valor">{{credito.aliquota}}%</span>
+          </div>
+          <div class="credito-item">
+            <span class="label">Valor Faturado:</span>
+            <span class="valor">{{credito.valorFaturado | currency:'BRL'}}</span>
+          </div>
+          <div class="credito-item">
+            <span class="label">Valor de Dedução:</span>
+            <span class="valor">{{credito.valorDeducao | currency:'BRL'}}</span>
+          </div>
+          <div class="credito-item">
+            <span class="label">Base de Cálculo:</span>
+            <span class="valor">{{credito.baseCalculo | currency:'BRL'}}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

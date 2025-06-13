@@ -1,0 +1,198 @@
+.container {
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 0 16px;
+}
+
+mat-card-title {
+  margin-bottom: 24px !important;
+  font-size: 1.5rem;
+}
+
+mat-card-header {
+  margin-bottom: 16px;
+}
+
+mat-divider {
+  margin: 16px 0;
+}
+
+mat-card-content {
+  padding-top: 16px;
+}
+
+.label-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.label-column {
+  font-weight: 500;
+  color: #666;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.label-column:first-child {
+  width: 200px;
+}
+
+.label-column:nth-child(2) {
+  max-width: 300px;
+  flex-grow: 0;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-top: 4px;
+  margin-bottom: 24px;
+}
+
+mat-form-field:first-child {
+  width: 200px;
+}
+
+.input-field {
+  max-width: 300px;
+  flex-grow: 0;
+}
+
+button[mat-raised-button] {
+  margin-top: 4px;
+  height: 52px;
+  min-width: 120px;
+}
+
+.select-icon {
+  vertical-align: middle;
+  margin-right: 8px;
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.resultados {
+  margin-top: 32px;
+  
+  h3 {
+    margin-bottom: 16px;
+    color: #3f51b5;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #3f51b5;
+    display: inline-block;
+  }
+}
+
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.credito-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  background-color: #f9f9f9;
+  padding: 16px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.credito-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: white;
+  
+  .label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 6px;
+  }
+  
+  .valor {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+  }
+}
+
+table {
+  width: 100%;
+}
+
+@media screen and (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .label-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .label-column {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  .credito-card {
+    grid-template-columns: 1fr;
+  }
+  
+  mat-form-field:first-child,
+  .input-field {
+    width: 100%;
+    max-width: none;
+  }
+  
+  button[mat-raised-button] {
+    width: 100%;
+  }
+  
+  mat-card-title {
+    font-size: 1.2rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .container {
+    padding: 0 8px;
+    margin: 16px auto;
+  }
+  
+  mat-card-content {
+    padding-top: 8px;
+  }
+  
+  .resultados h3 {
+    font-size: 1.1rem;
+  }
+  
+  .credito-item .valor {
+    font-size: 1rem;
+  }
+  
+  .credito-item .label {
+    font-size: 0.8rem;
+  }
+}
