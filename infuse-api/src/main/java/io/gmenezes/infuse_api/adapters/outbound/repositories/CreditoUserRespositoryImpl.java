@@ -3,7 +3,6 @@ package io.gmenezes.infuse_api.adapters.outbound.repositories;
 import io.gmenezes.infuse_api.domain.credito.Credito;
 import io.gmenezes.infuse_api.domain.credito.CreditoRepository;
 import io.gmenezes.infuse_api.util.CreditoMapper;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
