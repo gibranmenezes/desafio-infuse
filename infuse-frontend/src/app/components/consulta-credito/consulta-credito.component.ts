@@ -49,11 +49,22 @@ export class ConsultaCreditoComponent {
   
   creditos: Credito[] = [];
   credito: Credito | null = null;
+  creditoSelecionadoId: string | null = null;
+  creditoDetalhe: Credito | null = null;
+  loadingDetalhe = false;
   loading = false;
   displayedColumns: string[] = [
     'numeroCredito', 'numeroNfse', 'dataConstituicao', 
-    'valorIssqn', 'tipoCredito', 'acoes'
+    'valorIssqn', 'tipoCredito', 'detalhes'
   ];
+  
+  tipoResultadoExibido: 'nfse' | 'credito' | null = null;
+
+  constructor() {
+    this.consultaForm.get('tipoConsulta')?.valueChanges.subscribe(() => {
+      this.consultaForm.get('numeroConsulta')?.setValue('');
+    });
+  }
 
   get tipoConsulta() {
     return this.consultaForm.get('tipoConsulta')?.value || 'nfse';
@@ -75,6 +86,9 @@ export class ConsultaCreditoComponent {
     this.loading = true;
     this.credito = null;
     this.creditos = [];
+    this.creditoSelecionadoId = null;
+    this.creditoDetalhe = null;
+    this.tipoResultadoExibido = this.tipoConsulta as 'nfse' | 'credito';
 
     if (this.tipoConsulta === 'nfse') {
       this.consultarPorNfse(numeroConsulta);
@@ -148,6 +162,40 @@ export class ConsultaCreditoComponent {
   }
 
   verDetalhes(numeroCredito: string) {
-    this.router.navigate(['/detalhe', numeroCredito]);
+    if (this.creditoSelecionadoId === numeroCredito) {
+      this.creditoSelecionadoId = null;
+      this.creditoDetalhe = null;
+      return;
+    }
+
+    this.creditoSelecionadoId = numeroCredito;
+    this.loadingDetalhe = true;
+    
+    this.creditoService.getCreditoByNumero(numeroCredito).subscribe({
+      next: (response) => {
+        this.loadingDetalhe = false;
+        
+        if (!response || response.status === 204 || !response.content) {
+          this.creditoDetalhe = null;
+          this.snackBar.open('Não foi possível carregar os detalhes do crédito', 'Fechar', {
+            duration: 3000
+          });
+        } else {
+          this.creditoDetalhe = response.content;
+        }
+      },
+      error: (error) => {
+        this.loadingDetalhe = false;
+        this.creditoSelecionadoId = null;
+        this.snackBar.open('Erro ao carregar os detalhes do crédito', 'Fechar', {
+          duration: 3000
+        });
+        console.error('Erro ao carregar detalhes do crédito:', error);
+      }
+    });
+  }
+
+  isCreditoSelecionado(numeroCredito: string): boolean {
+    return this.creditoSelecionadoId === numeroCredito;
   }
 }
