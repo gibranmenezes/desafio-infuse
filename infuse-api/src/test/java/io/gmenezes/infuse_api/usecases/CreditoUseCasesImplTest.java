@@ -37,7 +37,6 @@ public class CreditoUseCasesImplTest {
     void getCreditosByNfse_deve_retornar_lista_de_creditos(){
         var creditoList = getCreditoList();
         when(repository.findAllByNfse("7891011")).thenReturn(creditoList);
-        when(mapper.fromCreditoToResponse(creditoList.getFirst())).thenReturn(getResponseList().getFirst());
 
         var result = service.getCreditosByNfse("7891011");
 
@@ -53,7 +52,6 @@ public class CreditoUseCasesImplTest {
         CreditoResponse response = getResponseList().getFirst();
 
         when(repository.findByNumeroCredito(numeroCredito)).thenReturn(credito);
-        when(mapper.fromCreditoToResponse(credito)).thenReturn(response);
 
         CreditoResponse result = service.getCreditoByNumero(numeroCredito);
 
