@@ -9,10 +9,13 @@ import org.hibernate.ObjectNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +25,7 @@ import java.util.List;
 public class ExceptionsHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<AppResponse<Object>> handleValidationExceptions(
             MethodArgumentNotValidException ex, WebRequest request) {
         List<AppErrorResponse> errors = ex.getBindingResult()
@@ -38,19 +42,39 @@ public class ExceptionsHandler {
                 .toResponseEntity();
     }
 
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<AppResponse<Object>> handleHandlerMethodValidationException(
+            HandlerMethodValidationException ex, WebRequest request) {
+
+        List<AppErrorResponse> errors = ex.getParameterValidationResults().stream()
+                .flatMap(result -> result.getResolvableErrors().stream())
+                .map(error -> {
+                    String fieldName = error instanceof FieldError ? ((FieldError) error).getField() : "parâmetro";
+                    return AppErrorResponse.builder()
+                            .code("VALIDATION_ERROR")
+                            .description(fieldName + ": " + error.getDefaultMessage())
+                            .traceId(request.getHeader("X-Trace-ID"))
+                            .build();
+                }).toList();
+
+        return AppResponse.invalid("Erro de validação nos parâmetros", HttpStatus.BAD_REQUEST, errors)
+                .toResponseEntity();
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<AppResponse<Object>> handleConstraintViolation(
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<AppResponse<Object>> handleConstraintViolationException(
             ConstraintViolationException ex, WebRequest request) {
-        List<AppErrorResponse> errors = ex.getConstraintViolations()
-                .stream()
+
+        List<AppErrorResponse> errors = ex.getConstraintViolations().stream()
                 .map(violation -> AppErrorResponse.builder()
-                        .code("CONSTRAINT_VIOLATION")
+                        .code("VALIDATION_ERROR")
                         .description(violation.getMessage())
                         .traceId(request.getHeader("X-Trace-ID"))
-                        .build())
-                .toList();
+                        .build()).toList();
 
-        return AppResponse.invalid("Erro de validação de restrições", HttpStatus.BAD_REQUEST, errors)
+        return AppResponse.invalid("Erro de validação nos parâmetros", HttpStatus.BAD_REQUEST, errors)
                 .toResponseEntity();
     }
 
