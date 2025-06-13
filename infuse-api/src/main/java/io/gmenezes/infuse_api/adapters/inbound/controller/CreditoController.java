@@ -29,8 +29,8 @@ public class CreditoController {
         return AppResponse.ok("Créditos encontrados", creditos).toResponseEntity();
     }
 
-    @GetMapping("/numero/{numeroCredito}")
-    public ResponseEntity<AppResponse<CreditoResponse>> buscarPorNumeroCredito(@PathVariable String numeroCredito) {
+    @GetMapping("/credito/{numeroCredito}")
+    public ResponseEntity<AppResponse<CreditoResponse>> buscarPorNumeroCredito(@NotBlank @PathVariable String numeroCredito) {
         CreditoResponse credito = useCases.getCreditoByNumero(numeroCredito);
         return AppResponse.ok("Crédito encontrado", credito).toResponseEntity();
     }
