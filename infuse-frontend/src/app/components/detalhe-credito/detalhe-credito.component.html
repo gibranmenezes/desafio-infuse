@@ -1,0 +1,81 @@
+<div class="container">
+  <div class="header-actions">
+    <button mat-button color="primary" (click)="voltar()">
+      <mat-icon>arrow_back</mat-icon> Voltar
+    </button>
+  </div>
+  
+  <mat-card *ngIf="credito">
+    <mat-card-header>
+      <mat-card-title>Detalhes do Crédito</mat-card-title>
+      <mat-card-subtitle>Número: {{ credito.numeroCredito }}</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <div class="credito-info">
+        <section class="info-section">
+          <h3>Informações Gerais</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Número do Crédito:</span>
+              <span class="info-value">{{ credito.numeroCredito }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Número da NFS-e:</span>
+              <span class="info-value">{{ credito.numeroNfse }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Data de Constituição:</span>
+              <span class="info-value">{{ credito.dataConstituicao | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Tipo de Crédito:</span>
+              <span class="info-value">{{ credito.tipoCredito }}</span>
+            </div>
+          </div>
+        </section>
+        
+        <section class="info-section">
+          <h3>Valores</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Valor do ISSQN:</span>
+              <span class="info-value">{{ credito.valorIssqn | currency:'BRL' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Valor Faturado:</span>
+              <span class="info-value">{{ credito.valorFaturado | currency:'BRL' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Valor de Dedução:</span>
+              <span class="info-value">{{ credito.valorDeducao | currency:'BRL' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Base de Cálculo:</span>
+              <span class="info-value">{{ credito.baseCalculo | currency:'BRL' }}</span>
+            </div>
+          </div>
+        </section>
+        
+        <section class="info-section">
+          <h3>Informações Adicionais</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Simples Nacional:</span>
+              <span class="info-value">{{ credito.simplesNacional === 'S' ? 'Sim' : 'Não' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Alíquota:</span>
+              <span class="info-value">{{ credito.aliquota | percent:'1.2-2' }}</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Carregando informações do crédito...</p>
+  </div>
+</div>
