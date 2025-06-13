@@ -20,13 +20,12 @@ import java.util.List;
 public class CreditoUseCasesImpl implements CreditoUseCases {
 
     private final CreditoRepository creditoRepository;
-    private final CreditoMapper creditoMapper;
 
     @Override
     public List<CreditoResponse> getCreditosByNfse(String numeroNfse) {
         var creditos = creditoRepository.findAllByNfse(numeroNfse);
         return creditos.stream()
-                .map(creditoMapper::fromCreditoToResponse)
+                .map(CreditoMapper::fromCreditoToResponse)
                 .toList();
     }
 
@@ -36,7 +35,7 @@ public class CreditoUseCasesImpl implements CreditoUseCases {
         if (credito == null) {
             throw new ObjectNotFoundException("Crédito não encontrado para o numero: " + numeroCredito, Credito.class);
         }
-        return creditoMapper.fromCreditoToResponse(credito);
+        return CreditoMapper.fromCreditoToResponse(credito);
     }
 
 }
