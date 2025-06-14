@@ -1,10 +1,10 @@
 # Desafio INFUSE
 
-Repositório da minha solução para desafio técnico da INFUSE TECNOLOGIA.
+Repositório da minha solução para desafio técnico da INFUSE.
 
 ## Sobre o projeto
 
-Esta aplicação implementa um sistema de gerenciamento de créditos fiscais utilizando arquitetura hexagonal para o backend (Java/Spring Boot) e Angular para o frontend. O sistema permite consultar, cadastrar e gerenciar créditos de ISSQN e outros tributos.
+Esta aplicação implementa um sistema de gerenciamento de créditos fiscais utilizando arquitetura hexagonal para o backend (Java/Spring Boot) e Angular para o frontend. O sistema permite consultar créditos a partir do número NFSe ou número do Crédito.
 
 ## Data de entrega
 2025-06-14 13:23:27
@@ -46,45 +46,55 @@ Gibran Menezes ([@gibranmenezes](https://github.com/gibranmenezes))
 ### Passos para execução
 
 1. Clone o repositório:
-   ```bash
+```bash
    git clone https://github.com/gibranmenezes/desafio-infuse.git
    cd desafio-infuse
 
-2. Acesse o diretório docker e crie ou edite os arquivos de ambiente:
-   ```bash
+2. Crie um banco de dados PostgreSQL localmente:
+```SQL
+   CREATE DATABASE infuse_db;
+
+3. Acesse o diretório docker e crie ou edite os arquivos de ambiente:
+```bash
    cd docker
 
-3. Configure as credenciais do banco de dados no arquivo db.env
+4. Configure as credenciais do banco de dados no arquivo db.env
     # Exemplo de configuração
-    POSTGRES_USER=postgres
-    POSTGRES_PASSWORD=admin
-    POSTGRES_DB=infuse_db
-
-4. Ajuste as configurações da API no arquivo api.env:
-    # Configurações do Spring Boot
-    SPRING_APPLICATION_NAME=infuse-api
-    SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/infuse_db
-    SPRING_DATASOURCE_USERNAME=postgres
-    SPRING_DATASOURCE_PASSWORD=admin
-
-    # Configurações do Kafka
-    SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-    APP_KAFKA_TOPIC_CONSULTA_CREDITOS=consulta-creditos
-
-    # Outras configurações
-    SERVER_SERVLET_CONTEXT_PATH=/infuse-api
+    DB_USERNAME=seu_usuario_postgres
+    DB_PASSWORD=sua_senha_postgres
 
 5. Inicie os containers
-    ```bash
+```bash
     docker-compose up -d
 
 6. Verifique se todos os serviços estão em execução:
-    ```bash
+```bash
     docker-compose ps
 
 7. Acesse as aplicações:
-    ([Frontend]: http://localhost:4200)
-    ([API]: http://localhost:8080/infuse-api)
-    ([Kafka]: http://localhost:9092)
-    
+    | Serviço | URL | Descrição |
+    | --- | --- | --- |
+    | Frontend | http://localhost:4200 | Interface de usuário Angular |
+    | API | http://localhost:8080/infuse-api | API REST Java/Spring Boot |
+    | Kafka UI | http://localhost:8090 | Interface para visualizar tópicos e mensagens do Kafka |
+    | Kafka | localhost:29092 | Endereço para conexão de aplicações externas com Kafka |
+    | Zookeeper | localhost:2181 | Serviço de coordenação usado pelo Kafka |
 
+### Troubleshooting
+
+Aguarde um tempo até todos os containers estarem de pé e as aplicações em execução
+
+1. Se todos os containers estão em execução:
+```bash
+        docker-compose ps
+
+2. Logs dos containers para identificar problemas:
+    ```bash
+    docker-compose logs -f api      # Logs da API
+    docker-compose logs -f frontend # Logs do Frontend
+    docker-compose logs -f kafka    # Logs do Kafka
+
+
+### Parando a aplicação
+```bash
+    docker-compose dow
