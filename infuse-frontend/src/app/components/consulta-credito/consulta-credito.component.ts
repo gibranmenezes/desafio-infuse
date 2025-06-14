@@ -36,6 +36,8 @@ export class ConsultaCreditoComponent implements OnInit, OnDestroy {
   creditoDetalhe: Credito | null = null;
   loadingDetalhe = false;
   loading = false;
+  mensagemErro = '';
+  mensagemErroDetalhe = '';
   displayedColumns: string[] = [
     'numeroCredito', 'numeroNfse', 'dataConstituicao', 
     'valorIssqn', 'tipoCredito', 'detalhes'
@@ -87,6 +89,8 @@ export class ConsultaCreditoComponent implements OnInit, OnDestroy {
     this.creditos = [];
     this.creditoSelecionadoId = null;
     this.creditoDetalhe = null;
+    this.mensagemErro = '';
+    this.mensagemErroDetalhe = '';
   }
 
   executarConsultaPorNfse(numeroNfse: string): void {
@@ -95,17 +99,26 @@ export class ConsultaCreditoComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           this.loading = false;
+          console.log('Resposta completa da consulta NFSe:', response);
+          
           const resultado = this.consultaHandler.processarResposta(
             response, 
-            'Nenhum crédito encontrado'
+            'Nenhum crédito encontrado para este número de NFS-e'
           );
-          if (resultado) {
-            this.creditos = resultado;
+          
+          if (resultado?.mensagemErro) {
+            this.mensagemErro = resultado.mensagemErro;
+            this.creditos = [];
+          } else {
+            this.mensagemErro = '';
+            this.creditos = resultado || [];
           }
         },
         error: (error) => {
           this.loading = false;
-          this.consultaHandler.tratarErro(error, 'Erro ao consultar créditos');
+          const resultado = this.consultaHandler.tratarErro(error, 'Erro ao consultar créditos');
+          this.mensagemErro = resultado.mensagemErro;
+          this.creditos = [];
         }
       });
   }
@@ -116,17 +129,32 @@ export class ConsultaCreditoComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           this.loading = false;
+          console.log('Resposta completa da consulta de crédito:', response);
+          
           const resultado = this.consultaHandler.processarResposta(
             response, 
-            'Crédito não encontrado'
+            'Crédito não encontrado para o número informado'
           );
-          if (resultado) {
+          
+          if (resultado?.mensagemErro) {
+            this.mensagemErro = resultado.mensagemErro;
+            this.credito = null;
+          } else {
+            this.mensagemErro = '';
             this.credito = resultado;
           }
         },
         error: (error) => {
           this.loading = false;
-          this.consultaHandler.tratarErro(error, 'Erro ao consultar crédito');
+          if (error.status === 404 || 
+              (error.error && error.error.message && 
+               error.error.message.toLowerCase().includes('não encontrado'))) {
+            this.mensagemErro = 'Crédito não encontrado para o número informado';
+          } else {
+            const resultado = this.consultaHandler.tratarErro(error, 'Erro ao consultar crédito');
+            this.mensagemErro = resultado.mensagemErro;
+          }
+          this.credito = null;
         }
       });
   }
@@ -135,11 +163,13 @@ export class ConsultaCreditoComponent implements OnInit, OnDestroy {
     if (this.creditoSelecionadoId === numeroCredito) {
       this.creditoSelecionadoId = null;
       this.creditoDetalhe = null;
+      this.mensagemErroDetalhe = '';
       return;
     }
 
     this.creditoSelecionadoId = numeroCredito;
     this.loadingDetalhe = true;
+    this.mensagemErroDetalhe = '';
     
     this.consultaHandler.consultarPorNumeroCredito(numeroCredito)
       .pipe(takeUntil(this.destroy$))
@@ -150,14 +180,20 @@ export class ConsultaCreditoComponent implements OnInit, OnDestroy {
             response, 
             'Não foi possível carregar os detalhes do crédito'
           );
-          if (resultado) {
+          
+          if (resultado?.mensagemErro) {
+            this.mensagemErroDetalhe = resultado.mensagemErro;
+            this.creditoDetalhe = null;
+          } else {
+            this.mensagemErroDetalhe = '';
             this.creditoDetalhe = resultado;
           }
         },
         error: (error) => {
           this.loadingDetalhe = false;
-          this.creditoSelecionadoId = null;
-          this.consultaHandler.tratarErro(error, 'Erro ao carregar os detalhes do crédito');
+          const resultado = this.consultaHandler.tratarErro(error, 'Erro ao carregar os detalhes do crédito');
+          this.mensagemErroDetalhe = resultado.mensagemErro;
+          this.creditoDetalhe = null;
         }
       });
   }

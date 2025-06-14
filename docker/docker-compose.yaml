@@ -1,0 +1,129 @@
+version: '3.8'
+
+networks:
+  infuse_network:
+    driver: bridge
+
+services:
+  # API Backend
+  api:
+    image: maven:3.9.6-eclipse-temurin-21
+    container_name: infuse-api
+    working_dir: /app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  
+    env_file:
+      - ./api.env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/infuse_db
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-admin}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../infuse-api:/app 
+    command: >
+      sh -c "apt-get update && apt-get install -y netcat-openbsd && 
+      echo 'Aguardando PostgreSQL...' &&
+      while ! nc -z host.docker.internal 5432; do
+        echo 'PostgreSQL indisponível - esperando...'
+        sleep 2
+      done &&
+      echo 'PostgreSQL disponível!' &&
+      ls -la &&
+      if [ -f pom.xml ]; then
+        echo 'pom.xml encontrado, iniciando aplicação...' &&
+        mvn spring-boot:run
+      else
+        echo 'ERRO: pom.xml não encontrado! Verifique o volume montado.' &&
+        ls -la &&
+        exit 1
+      fi"
+    depends_on:
+      - kafka
+    networks:
+      - infuse_network
+    restart: on-failure
+
+  # Frontend
+  frontend:
+    image: node:20-alpine
+    container_name: infuse-frontend
+    working_dir: /app
+    ports:
+      - "4200:4200"
+    volumes:
+      - ../infuse-frontend:/app 
+      - /app/node_modules  
+    command: >
+      sh -c "echo 'Verificando conteúdo do diretório:' && 
+      ls -la &&
+      echo 'Verificando se package.json existe:' &&
+      if [ -f package.json ]; then
+        echo 'package.json encontrado, mostrando scripts disponíveis:' &&
+        grep -A 20 '\"scripts\"' package.json &&
+        echo 'Instalando dependências...' &&
+        npm install &&
+        echo 'Iniciando o projeto Angular...' &&
+        npm run start -- --host 0.0.0.0
+      else
+        echo 'ERRO: package.json não encontrado! Verifique o volume montado.' &&
+        exit 1
+      fi"
+    depends_on:
+      - api
+    networks:
+      - infuse_network
+    restart: on-failure
+
+  # Zookeeper (para Kafka)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: infuse-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - infuse_network
+    restart: on-failure
+
+  # Kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: infuse-kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"  
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    depends_on:
+      - zookeeper
+    networks:
+      - infuse_network
+    restart: on-failure
+
+  # Kafka UI - Interface gráfica para visualizar tópicos e mensagens
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: infuse-kafka-ui
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: Local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on:
+      - kafka
+    networks:
+      - infuse_network
+    restart: on-failure

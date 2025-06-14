@@ -22,27 +22,42 @@ export class ConsultaHandlerService {
 
   processarResposta(response: any, mensagemVazio: string): any {
     if (!response) {
-      this.mostrarMensagem('Nenhum dado recebido do servidor');
-      return null;
+      return { mensagemErro: 'Nenhum dado recebido do servidor' };
     }
     
-    if (response.status === 204 || !response.content || 
+    if (response.status === 204 || 
+        !response.content || 
         (Array.isArray(response.content) && response.content.length === 0)) {
-      this.mostrarMensagem(mensagemVazio);
-      return null;
+      return { mensagemErro: mensagemVazio };
     }
     
-    return response.content;
+    if (response.content !== undefined) {
+      return response.content;
+    } else if (response.data !== undefined) {
+      return response.data;
+    }
+    
+    return response;
   }
 
-  tratarErro(erro: any, mensagem: string): void {
-    this.mostrarMensagem(mensagem);
+  tratarErro(erro: any, mensagem: string): any {
     console.error(`${mensagem}:`, erro);
+    
+    let mensagemDetalhe = '';
+    if (erro.error && erro.error.message) {
+      mensagemDetalhe = `: ${erro.error.message}`;
+    } else if (typeof erro === 'string') {
+      mensagemDetalhe = `: ${erro}`;
+    } else if (erro.message) {
+      mensagemDetalhe = `: ${erro.message}`;
+    }
+    
+    return { mensagemErro: `${mensagem}${mensagemDetalhe}` };
   }
 
   mostrarMensagem(mensagem: string): void {
     this.snackBar.open(mensagem, 'Fechar', {
-      duration: 3000
+      duration: 5000
     });
   }
 }

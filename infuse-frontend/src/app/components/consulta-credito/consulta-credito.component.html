@@ -175,6 +175,19 @@
           </div>
         </div>
       </div>
+      
+      <!-- Mensagens de Erro -->
+      <div *ngIf="tipoResultadoExibido === 'nfse' && mensagemErro" class="alert alert-info text-center my-3">
+        {{ mensagemErro }}
+      </div>
+      
+      <div *ngIf="tipoResultadoExibido === 'credito' && mensagemErro" class="alert alert-info text-center my-3">
+        {{ mensagemErro }}
+      </div>
+      
+      <div *ngIf="creditoSelecionadoId && mensagemErroDetalhe" class="alert alert-info text-center my-2">
+        {{ mensagemErroDetalhe }}
+      </div>
     </mat-card-content>
   </mat-card>
 </div>
