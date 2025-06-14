@@ -1,6 +1,7 @@
 package io.gmenezes.infuse_api.usecases;
 
 import io.gmenezes.infuse_api.application.services.CreditoUseCasesImpl;
+import io.gmenezes.infuse_api.application.usecases.EventUseCase;
 import io.gmenezes.infuse_api.domain.credito.Credito;
 import io.gmenezes.infuse_api.domain.credito.CreditoRepository;
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,8 +18,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,18 +35,33 @@ public class CreditoUseCasesImplTest {
     @Mock
     private CreditoMapper mapper;
 
+    @Mock
+    private EventUseCase eventService;
+
     @InjectMocks
     private CreditoUseCasesImpl service;
 
     @Test
     void getCreditosByNfse_deve_retornar_lista_de_creditos(){
         var creditoList = getCreditoList();
-        when(repository.findAllByNfse("7891011")).thenReturn(creditoList);
+        var responseList = getResponseList();
+        String nfse = "7891011";
 
-        var result = service.getCreditosByNfse("7891011");
+        when(repository.findAllByNfse(nfse)).thenReturn(creditoList);
+        when(mapper.fromCreditoToResponse(creditoList.getFirst())).thenReturn(responseList.getFirst());
+
+        var result = service.getCreditosByNfse(nfse);
 
         assertNotNull(result);
+        assertEquals(1, result.size());
         assertEquals(creditoList.getFirst().getNumeroCredito(), result.getFirst().numeroCredito());
+
+
+        verify(eventService).registrarConsultaNfse(
+               any(String.class),
+                any(Boolean.class),
+                any(Map.class)
+        );
 
     }
 
@@ -52,11 +72,18 @@ public class CreditoUseCasesImplTest {
         CreditoResponse response = getResponseList().getFirst();
 
         when(repository.findByNumeroCredito(numeroCredito)).thenReturn(credito);
+        when(mapper.fromCreditoToResponse(credito)).thenReturn(response);
 
         CreditoResponse result = service.getCreditoByNumero(numeroCredito);
 
         assertNotNull(result);
         assertEquals(credito.getNumeroCredito(), result.numeroCredito());
+
+        verify(eventService).registrarConsultaCredito(
+                any(String.class),
+                any(Boolean.class),
+                any(Map.class)
+        );
     }
 
 
@@ -70,6 +97,14 @@ public class CreditoUseCasesImplTest {
                 () -> service.getCreditoByNumero(numeroCredito),
                 "Crédito não encontrado para o numero: " + numeroCredito
         );
+
+        verify(eventService).registrarConsultaCredito(
+                any(String.class),
+                any(Boolean.class),
+                any(Map.class)
+        );
+
+
     }
 
     private List<Credito> getCreditoList() {
