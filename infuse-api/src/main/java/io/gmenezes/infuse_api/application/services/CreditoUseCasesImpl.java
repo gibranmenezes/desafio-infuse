@@ -23,59 +23,45 @@ public class CreditoUseCasesImpl implements CreditoUseCases {
 
     private final CreditoRepository creditoRepository;
     private final EventUseCase eventService;
-
-
-    @Autowired
-    private CreditoMapper creditoMapper;
+    private final CreditoMapper creditoMapper;
 
     @Override
     public List<CreditoResponse> getCreditosByNfse(String numeroNfse) {
-        try {
             var creditos = creditoRepository.findAllByNfse(numeroNfse);
             List<CreditoResponse> resultado = creditos.stream()
                     .map(creditoMapper::fromCreditoToResponse)
                     .toList();
-
-            Map<String, Object> detalhes = new HashMap<>();
-            detalhes.put("quantidade", resultado.size());
-            eventService.registrarConsultaNfse(numeroNfse, !resultado.isEmpty(), detalhes);
+            publicarEventoNfse(resultado);
 
             return resultado;
-        } catch (Exception e) {
-            Map<String, Object> detalhes = new HashMap<>();
-            detalhes.put("erro", e.getMessage());
-            eventService.registrarConsultaNfse(numeroNfse, false, detalhes);
-            throw e;
-        }
     }
 
     @Override
     public CreditoResponse getCreditoByNumero(String numeroCredito) {
-        try {
             Credito credito = creditoRepository.findByNumeroCredito(numeroCredito);
             if (credito == null) {
-                Map<String, Object> detalhes = new HashMap<>();
-                detalhes.put("mensagem", "Crédito não encontrado");
-                eventService.registrarConsultaCredito(numeroCredito, false, detalhes);
-
+                publicarEventoCredito(numeroCredito, false);
                 throw new ObjectNotFoundException("Crédito não encontrado para o numero: " + numeroCredito, Credito.class);
             }
 
-            CreditoResponse response = creditoMapper.fromCreditoToResponse(credito);
+            publicarEventoCredito(numeroCredito, true);
 
-            Map<String, Object> detalhes = new HashMap<>();
-            detalhes.put("creditoId", credito.getNumeroCredito());
-            eventService.registrarConsultaCredito(numeroCredito, true, detalhes);
+            return creditoMapper.fromCreditoToResponse(credito);
 
-            return response;
-        } catch (Exception e) {
-            if (!(e instanceof ObjectNotFoundException)) {
-                Map<String, Object> detalhes = new HashMap<>();
-                detalhes.put("erro", e.getMessage());
-                eventService.registrarConsultaCredito(numeroCredito, false, detalhes);
-            }
-            throw e;
-        }
+    }
+
+    private void publicarEventoNfse(List<CreditoResponse> responses) {
+        log.debug("Publicando evento para NFSe {}", responses.getFirst().numeroNfse());
+        Map<String, Object> detalhes = new HashMap<>();
+        detalhes.put("quantidade", responses.size());
+        eventService.registrarConsultaNfse(responses.getFirst().numeroNfse(), !responses.isEmpty(), detalhes);
+    }
+
+    private void publicarEventoCredito(String numeroCredito, boolean sucesso) {
+        log.debug("Publicando evento para Numero credito {}", numeroCredito);
+        Map<String, Object> detalhes = new HashMap<>();
+        detalhes.put("creditoId",numeroCredito);
+        eventService.registrarConsultaCredito(numeroCredito, sucesso, detalhes);
     }
 
 }
