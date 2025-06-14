@@ -18,7 +18,7 @@ public class EventPublisherAdapter implements EventPublisher {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${app.kafka.topics.consulta-creditos}")
+    @Value("${app.kafka.topic.consulta-creditos}")
     private String consultaTopic;
 
 
