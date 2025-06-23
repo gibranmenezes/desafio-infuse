@@ -141,7 +141,7 @@ public class ExceptionsHandler {
 
         log.error("Erro não tratado: ", ex);
 
-        return AppResponse.invalid("Erro interno no servidor", HttpStatus.INTERNAL_SERVER_ERROR,
+        return AppResponse.invalid("Erro interno no servidor", HttpStatus.SERVICE_UNAVAILABLE,
                 Collections.singletonList(error)).toResponseEntity();
     }
 }
